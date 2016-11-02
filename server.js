@@ -145,8 +145,10 @@ io.on('connection', function (socket) {
 	    if(socket.location.indexOf(data) != "undefined"){
 	    	socket.location.splice(socket.location.indexOf(data), 1);
 	    }
-
-	    socket.location.push(data);
+	    
+	    if(data.potrcko){
+		    socket.location.push(data);
+		}
 
 	    for(var i=0; i < map_clients.length; i++){
       		var client = map_clients[i];
@@ -192,19 +194,6 @@ io.on('connection', function (socket) {
             }
         }
         socket.emit('location', {location: loc});
-	});	
-
-	socket.on('myLocation',function(data){
-
-	    if (typeof socket.location == "undefined") {
-	      socket.location = [];
-	    }
-
-	    if(socket.location.indexOf(data) != "undefined"){
-	    	socket.location.splice(socket.location.indexOf(data), 1);
-	    }
-
-	    socket.location.push(data);
 	});
 
 	socket.on('disconect', function(){

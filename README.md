@@ -120,7 +120,8 @@ POST
     username: String,
     longitude: String, 
     latitude: String,
-    busy: Boolean
+    potrcko: Boolean,
+    busy: Boolean,
     radius: Number //in km
 }
 
@@ -135,7 +136,8 @@ POST
             username: String,
             longitude: String, 
             latitude: String,
-            busy: Boolean
+            potrcko: Boolean,
+            busy: Boolean,
             radius: Number //in km
         }, ...
     ]
@@ -150,12 +152,10 @@ Disconetded user
     username: String,
     longitude: String, 
     latitude: String,
-    busy: Boolean
+    potrcko: Boolean,
+    busy: Boolean,
     radius: Number //in km
 }
-
-#emit myLocation
-only Potrcko in Service
 
 
 #emit search
