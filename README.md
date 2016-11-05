@@ -29,6 +29,7 @@ Send
     mob_num: '066/666-666',
     potrcko: 'true/false'
     busy: 'true/false'
+    radius: 5
 }
 Respons
 {
@@ -38,15 +39,17 @@ Respons
      user: user
 }
 user: { 
-    firstname, 
-    lastname,
-    email,
-    birthday,
-    reg_date,
-    image,
-    mob_num
-    potrcko
-    busy
+    firstname: String, 
+    lastname: String,
+    email: { type: String, required: true, unique: true },
+    birthday: Date,
+    reg_date: Date,
+    password: String, 
+    image: String,
+    mob_num: String,
+    potrcko: Boolean,
+    busy: Boolean,
+    radius: Number //in km
 }
 
 #Upload image

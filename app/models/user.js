@@ -12,5 +12,6 @@ module.exports = mongoose.model('User', new Schema({
     image: String,
     mob_num: String,
     potrcko: Boolean,
-    busy: Boolean
+    busy: Boolean,
+    radius: Number
 }));

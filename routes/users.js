@@ -40,9 +40,7 @@ router.post('/authenticate', function(req, res) {
         // create a token
        
         
-        var token = jwt.sign(user, app.get('superSecret'), {
-          expiresIn: '2 days'// expires in 24 hours
-        });
+        var token = jwt.sign(user, app.get('superSecret'));
 
         delete user.password;
         // return the information including token as JSON

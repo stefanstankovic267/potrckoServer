@@ -1,7 +1,7 @@
 // =======================
 // get the packages we need ============
 // =======================
-
+var debug = true;
 var express     = require('express');
 var app         = express();
 var path = require('path');
@@ -135,8 +135,16 @@ conn.once("open", function(){
 io.on('connection', function (socket) {
 
 	map_clients.push(socket);
+	if(debug)
+		console.info("Client is connected");
 
 	socket.on('changeLocation',function(data){
+
+		if(debug)
+		{
+			console.info("onChangeLocation");
+			console.log(data);
+		}
 
 	    if (typeof socket.location == "undefined") {
 	      socket.location = [];
@@ -173,6 +181,12 @@ io.on('connection', function (socket) {
 	});
 
 	socket.on('allLocation', function(){
+
+		if(debug)
+		{
+			console.info("allLocation");
+		}
+
 		var loc = [];
 		for(var i=0; i < map_clients.length; i++){
       		var client = map_clients[i];
@@ -197,6 +211,11 @@ io.on('connection', function (socket) {
 	});
 
 	socket.on('disconect', function(){
+
+		if(debug)
+		{
+			console.info("diconect");
+		}
 
 		 for(var i=0; i < map_clients.length; i++){
       		var client = map_clients[i];
