@@ -165,8 +165,6 @@ Disconetded user
     busy: Boolean,
     radius: Number //in km
 }
-<<<<<<< HEAD
-=======
 ```
 #emit myLocation
 only Potrcko in Service
@@ -183,3 +181,81 @@ data like
 }
 ```
 #emit array of users;
+
+#Recruited couriers
+method POST
+/notification?token=TOKEN
+
+```javascript
+//Send
+{
+    to: CourirID,
+    type: ["dataFromRoute", "acceptJob", "haveRateAccess", "newRate", "startnotification", "endNotification"] 
+
+    data:
+        1. dataFromRoutre
+        {
+            messageType: type,
+            strat: {longitude: lat, latitude: lng},
+            end: {longitude: lat, latitude: lng},
+            message: message
+        }
+        2. accepJob
+        {
+            messageType: type,
+            accept: true/false,
+            message: message
+        }
+        3. haveRateAccess
+        {
+            messageType: type,
+            accepted: true/false,
+            message: message
+        }
+        4. newRate
+        {
+            messageType: type,
+            message: message
+        }
+        5. stratNotification
+        {
+            messageType: type,
+            message: message
+        }
+        6. endNotification
+        {
+            messageType: type,
+            message: message
+        }
+}
+
+//Respons
+{
+    success: true,
+    message: message
+}
+message => [
+    {
+        fromUser: User, 
+        messageType: String, 
+        data: Object
+    }
+]
+```
+
+#Socket on
+newNotification
+
+Get my notifications
+method GET
+```javascript
+/myNotification?token=TOKEN
+Respons
+[
+    {
+        fromUser: User, 
+        messageType: String, 
+        data: String
+        },  ...
+]
+```
