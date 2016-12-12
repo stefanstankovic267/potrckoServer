@@ -249,7 +249,9 @@ newNotification
 Get my notifications
 method GET
 ```javascript
+
 /myNotification?token=TOKEN
+
 Respons
 [
     {

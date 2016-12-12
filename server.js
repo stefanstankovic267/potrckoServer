@@ -1,6 +1,7 @@
 // =======================
-// get the packages we need ============
+// get the packages we need
 // =======================
+
 var debug = true;
 var express     = require('express');
 var app         = express();
@@ -16,17 +17,16 @@ var ranks  		= require('./routes/ranks.js');
 var server 		= require('http').Server(app);
 var io 			= require('socket.io')(server , { pingTimeout: 180000, pingInterval: 50000 });
 
-
-
 var map_clients = [];
 var geolib 		= require('geolib');
 var User    	= require('./app/models/user');
 var Notification = require('./app/models/notification');
 
 var msgType = ["notoficationFromClient", "dataFromRoute", "acceptJob", "haveRateAccess"];
-///=======================
-///Upload config =========
-///=======================
+
+///========================
+///Upload config ==========
+///========================
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -47,9 +47,10 @@ var gfs;
 var Grid 	= require("gridfs-stream");
 Grid.mongo 	= mongoose.mongo;
 
-// =======================
-// configuration =========
-// =======================
+// ========================
+// configuration ==========
+// ========================
+
 var port = process.env.PORT || 3000; // used to create, sign, and verify tokens
 
 // use body parser so we can get info from POST and/or URL parameters
@@ -360,6 +361,7 @@ io.on('connection', function (socket) {
 // =======================
 // start the server ======
 // =======================
+
 
 server.listen(port, function(){
 	console.log('Magic happens at http://localhost:' + port);

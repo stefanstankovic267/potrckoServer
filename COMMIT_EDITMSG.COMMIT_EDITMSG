@@ -1,0 +1,69 @@
+
+
+# --------------
+# Please enter the commit message for your changes. Everything below
+# this paragraph is ignored, and an empty message aborts the commit.
+# Just close the window to accept your message.
+diff --git a/README.md b/README.md
+index eb816f4..64c615b 100644
+--- a/README.md
++++ b/README.md
+@@ -249,7 +249,9 @@ newNotification
+ Get my notifications
+ method GET
+ ```javascript
++
+ /myNotification?token=TOKEN
++
+ Respons
+ [
+     {
+diff --git a/server.js b/server.js
+index d75bde5..64bf446 100644
+--- a/server.js
++++ b/server.js
+@@ -1,6 +1,7 @@
+ // =======================
+-// get the packages we need ============
++// get the packages we need
+ // =======================
++
+ var debug = true;
+ var express     = require('express');
+ var app         = express();
+@@ -16,17 +17,16 @@ var ranks  		= require('./routes/ranks.js');
+ var server 		= require('http').Server(app);
+ var io 			= require('socket.io')(server , { pingTimeout: 180000, pingInterval: 50000 });
+ 
+-
+-
+ var map_clients = [];
+ var geolib 		= require('geolib');
+ var User    	= require('./app/models/user');
+ var Notification = require('./app/models/notification');
+ 
+ var msgType = ["notoficationFromClient", "dataFromRoute", "acceptJob", "haveRateAccess"];
+-///=======================
+-///Upload config =========
+-///=======================
++
++///========================
++///Upload config ==========
++///========================
+ 
+ app.set('views', path.join(__dirname, 'views'));
+ app.set('view engine', 'jade');
+@@ -47,9 +47,10 @@ var gfs;
+ var Grid 	= require("gridfs-stream");
+ Grid.mongo 	= mongoose.mongo;
+ 
+-// =======================
+-// configuration =========
+-// =======================
++// ========================
++// configuration ==========
++// ========================
++
+ var port = process.env.PORT || 3000; // used to create, sign, and verify tokens
+ 
+ // use body parser so we can get info from POST and/or URL parameters
