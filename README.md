@@ -195,31 +195,31 @@ method POST
     data:
         1. dataFromRoutre
         {
+            messageType: type,
             strat: {longitude: lat, latitude: lng},
             end: {longitude: lat, latitude: lng},
             message: message
         }
         2. accepJob
         {
+            messageType: type,
             accept: true/false,
             message: message
         }
-        3. haveRateAccess
+        3. newRate
         {
-            accepted: true/false,
-            message: message
-        }
-        4. newRate
-        {
+            messageType: type,
             stars: number,
             message: message
         }
-        5. stratNotification
+        4. stratNotification
         {
+            messageType: type,
             message: message
         }
-        6. endNotification
+        5. endNotification
         {
+            messageType: type,
             message: message
         }
 }
