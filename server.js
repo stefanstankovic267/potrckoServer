@@ -21,14 +21,8 @@ var map_clients = [];
 var geolib 		= require('geolib');
 var User    	= require('./app/models/user');
 var Notification = require('./app/models/notification');
-var FromRate 	= require('./app/models/FromRate');
-var Rate		= require('./app/models/rate');
 
-var msgType = { MSG_DATA : "Data From Route",
-    	MSG_ACCEPT : "Accept Job",
-    	MSG_NEW_RATE : "New Rate",
-    	MSG_START_LOCATION : "Start Notification",
-    	MSG_END_LOCATION : "End Notification"};
+var msgType = ["notoficationFromClient", "dataFromRoute", "acceptJob", "haveRateAccess"];
 
 ///========================
 ///Upload config ==========
@@ -88,9 +82,9 @@ conn.once("open", function(){
   	var token = req.body.token || req.query.token || req.headers['x-access-token'];
 
   		if (token) {
-	  		jwt.verify(token, app.get('superSecret'), function(err, decoded) {
+	  		jwt.verify(token, app.get('superSecret'), function(err, decoded) {      
 		      	if (err) {
-		        	return res.json({ success: false, message: err });
+		        	return res.json({ success: false, message: err });    
 		      	} else {
 
 		      		var patch = decoded._doc._id + '.jpg';
@@ -147,9 +141,9 @@ conn.once("open", function(){
 	  if (token) {
 
 	    // verifies secret and checks exp
-	    jwt.verify(token, app.get('superSecret'), function(err, decoded) {
+	    jwt.verify(token, app.get('superSecret'), function(err, decoded) {      
 	      if (err) {
-	        return res.json({ success: false, message: err });
+	        return res.json({ success: false, message: err });    
 	      } else {
 	        // if everything is good, save to request for use in other routes
 	        req.decoded = decoded;
@@ -161,11 +155,11 @@ conn.once("open", function(){
 
 	    // if there is no token
 	    // return an error
-	    return res.json({
-	        success: false,
-	        message: 'No token provided.'
+	    return res.json({ 
+	        success: false, 
+	        message: 'No token provided.' 
 	    });
-
+	    
 	  }
 	});
 
@@ -184,70 +178,6 @@ conn.once("open", function(){
 		    mPart.messageType = req.body.type;
 		    mPart.data = req.body.data;
 
-        	if(req.body.type == msgType.MSG_ACCEPT){
-
-        		if(req.body.data.accepted){
-
-	        		FromRate.findOne({
-	        			userId: req.body.to
-	        			}, function(err, fromRate){
-	        				if (err) res.json({ success: false, message: err });
-
-	        				if(!fromRate){
-	        					var usr = [];
-	        					usr.push(user._id);
-	        					var fRate = new FromRate({
-	        						userId : req.body.to,
-	        						courierId: usr
-	        					});
-	        					fRate.save(function(err){
-	        						if (err) res.json({ success: false, message: err });
-	        					});
-	        				}else if(fromUser){
-	        					fromUser.courierId.push(user._id);
-	        					fromUser.save(function(err, fu){
-							    	if(err) res.json({ success: false, message: err });
-							    });
-	        				}
-	        			}
-
-	        		});
-	        	}
-        	}else if( req.body.type == msgType.MSG_NEW_RATE){
-        		FromRate.findOne({
-        			userId: user._id
-        		}, function(err, fromRate){
-        			if (err) res.json({ success: false, message: err });
-
-        			if(!formRate){ 
-        				res.json({ success: false, message: "You no have access from rate." });
-        			}
-        			else if(fromRate){
-        				var index = fromRate.courierId.indexOf(req.body.to);
-        				if(index == -1){
-        					res.json({ success: false, message: "You no have access from rate." });
-        				} else {
-        					fromRate.courierId.splice(fromRate.courierId.indexOf(socket), 1);
-        					if(fromRate.courierId.length == 0)
-        						fromRate.remove(function(err){
-        							res.json({ success: false, message: err });
-        						});
-        					var rate = new Rate({
-        						ranks: user._id,
-        						rated: req.body.to;
-        						stars: req.body.data.stars,
-        						comment: req.body.data.message,
-        						rateDate: new Date()
-        					});
-        					
-        					rate.save(function(err){
-        						res.json({ success: false, message: err });
-        					});
-        				}
-        			}
-        		});
-        	}
-
 		    if (!notification) {
 
 		    	var msg = [];
@@ -259,7 +189,7 @@ conn.once("open", function(){
 		    	})
 
 		    	not.save(function(err){
-		    		if(err) res.json({ success: false, message: err });
+		    		if(err) res.json({ success: false, err: err });
 		    	})
 
 		      res.json({ success: true, message: 'Message update success.' });
@@ -277,7 +207,7 @@ conn.once("open", function(){
 				    */
 			    notification.messages.push(msgPart);
 			    notification.save(function(err, not){
-			    	if(err) res.json({ success: false, message: err });
+			    	if(err) res.json({ success: false, err: err });
 			    });
 		    }
 		  });
@@ -292,14 +222,14 @@ conn.once("open", function(){
 
   app.get("/myNotifications", function(req, res){
   		if (token) {
-	  		jwt.verify(token, app.get('superSecret'), function(err, decoded) {
+	  		jwt.verify(token, app.get('superSecret'), function(err, decoded) {      
 		      	if (err) {
-		        	return res.json({ success: false, message: err });
+		        	return res.json({ success: false, message: err });    
 		      	} else {
 
 		      		var user = decoded._doc;
-		      		Notification.findOneAndRemove(
-		      			{ userId: user._id},
+		      		Notification.findByIdAndRemove(
+		      			{ userId: user._id}, 
 		      			function(err, not) {
 
     						if (err) res.json({ success: false, message: err });
@@ -344,7 +274,7 @@ io.on('connection', function (socket) {
 	    if(socket.location.indexOf(data) != "undefined"){
 	    	socket.location.splice(socket.location.indexOf(data), 1);
 	    }
-
+	    
 	    if(data.potrcko){
 		    socket.location.push(data);
 		}
@@ -355,11 +285,11 @@ io.on('connection', function (socket) {
             	if (client.id != socket.id){
             		if(geolib.isPointInCircle(
 					    {
-					    	latitude: map_clients[i].location.latitude,
+					    	latitude: map_clients[i].location.latitude, 
 					    	longitude: map_clients[i].location.longitude
 					    },
 					    {
-					    	latitude: data.latitude,
+					    	latitude: data.latitude, 
 					    	longitude: data.longitude
 					    },
 					    data.radius
@@ -385,11 +315,11 @@ io.on('connection', function (socket) {
             	if (client.id != socket.id)
             		if(geolib.isPointInCircle(
 					    {
-					    	latitude: map_clients[i].location.latitude,
+					    	latitude: map_clients[i].location.latitude, 
 					    	longitude: map_clients[i].location.longitude
 					    },
 					    {
-					    	latitude: data.latitude,
+					    	latitude: data.latitude, 
 					    	longitude: data.longitude
 					    },
 					    data.radius
