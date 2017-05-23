@@ -62,7 +62,7 @@ router.post('/singup', function(req, res) {
     email: req.body.email
   }, function(err, user) {
 
-    if (err) res.json({ success: false, message: err });
+    if (err) res.json({ success: false, message: err });;
 
     if (!user) {
 
@@ -80,7 +80,7 @@ router.post('/singup', function(req, res) {
 		  });
 
 		  // save the sample user
-		  nick.save(function(err){
+		  nick.save(function(err) {
 		    if (err) res.json({ success: false, message: err });
 		    User.findOne({
 			    email: req.body.email
@@ -148,7 +148,7 @@ router.post('/', function(req, res) {
 });
 
 router.post('/update', function(req, res) {
-  //console.log(req.body);
+  console.log(req.body);
   User.findOneAndUpdate(
     {email: req.decoded._doc.email}, // query
     req.body, //for change

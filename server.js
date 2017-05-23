@@ -9,6 +9,7 @@ var path = require('path');
 var bodyParser  = require('body-parser');
 var morgan      = require('morgan');
 
+<<<<<<< HEAD
 var config 		= require('./config'); // get our config file
 var users  		= require('./routes/users');
 var routes 		= require('./routes/index');
@@ -17,16 +18,30 @@ var ranks  		= require('./routes/ranks.js');
 var server 		= require('http').Server(app);
 var io 			= require('socket.io')(server , { pingTimeout: 180000, pingInterval: 50000 });
 
-var map_clients = [];
-var geolib 		= require('geolib');
-var User    	= require('./app/models/user');
-var Notification = require('./app/models/notification');
+=======
+var config = require('./config'); // get our config file
+var users  = require('./routes/users');
+var routes = require('./routes/index');
+var ranks  = require('./routes/ranks.js');
 
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
+>>>>>>> parent of eab83e4... all
+var map_clients = [];
+var geolib = require('geolib');
+var User    = require('./app/models/user');
+
+<<<<<<< HEAD
 var msgType = ["notoficationFromClient", "dataFromRoute", "acceptJob", "haveRateAccess"];
 
 ///========================
 ///Upload config ==========
 ///========================
+=======
+///=======================
+///Upload config =========
+///=======================
+>>>>>>> parent of eab83e4... all
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -62,7 +77,6 @@ app.use(morgan('dev'));
 app.use('/', routes);
 app.use('/users', users);
 app.use('/ranks', ranks);
-
 app.set('superSecret', config.secret);
 
 // =======================
@@ -132,119 +146,6 @@ conn.once("open", function(){
       }
     });
   });
-
-  app.use(function(req, res, next) {
-	  // check header or url parameters or post parameters for token
-	  var token = req.body.token || req.query.token || req.headers['x-access-token'];
-
-	  // decode token
-	  if (token) {
-
-	    // verifies secret and checks exp
-	    jwt.verify(token, app.get('superSecret'), function(err, decoded) {      
-	      if (err) {
-	        return res.json({ success: false, message: err });    
-	      } else {
-	        // if everything is good, save to request for use in other routes
-	        req.decoded = decoded;
-	        next();
-	      }
-	    });
-
-	  } else {
-
-	    // if there is no token
-	    // return an error
-	    return res.json({ 
-	        success: false, 
-	        message: 'No token provided.' 
-	    });
-	    
-	  }
-	});
-
-  app.post("/notificaton", function(req, res){
-  		var user = req.decoded._doc;
-  		user.password = "1";
-
-  		Notification.findOne({
-		    userId: req.body.to
-		  }, function(err, notification) {
-
-		    if (err) res.json({ success: false, err: err });
-
-		    var mPart = {};
-		    mPart.fromUser = user;
-		    mPart.messageType = req.body.type;
-		    mPart.data = req.body.data;
-
-		    if (!notification) {
-
-		    	var msg = [];
-		    	msg.push(mPart);
-
-		    	var not = new Notification({
-		    		userId: req.body.to,
-		    		message: msg
-		    	})
-
-		    	not.save(function(err){
-		    		if(err) res.json({ success: false, err: err });
-		    	})
-
-		      res.json({ success: true, message: 'Message update success.' });
-
-		    } else if (notification) {
-
-		    	/*
-		      Notification.findOneAndUpdate({userId: req.body.to},
-		      	{$push: {messages: msgPart}},
-		      	{safe: true, upsert: true},
-				    function(err, model) {
-				        if(err) res.json({ success: false, err: err });
-				        else res.json({ success: true, message: 'Message update success.' });
-				    });
-				    */
-			    notification.messages.push(msgPart);
-			    notification.save(function(err, not){
-			    	if(err) res.json({ success: false, err: err });
-			    });
-		    }
-		  });
-
-  		for(var i=0; i < map_clients.length; i++){
-  			var client = map_clients[i];
-  			if(client.location.userId = req.body.userId)
-  				client.emit("newNotification", {message: "YouHaveNotificatin"});
-  		}
-
-	});
-
-  app.get("/myNotifications", function(req, res){
-  		if (token) {
-	  		jwt.verify(token, app.get('superSecret'), function(err, decoded) {      
-		      	if (err) {
-		        	return res.json({ success: false, message: err });    
-		      	} else {
-
-		      		var user = decoded._doc;
-		      		Notification.findByIdAndRemove(
-		      			{ userId: user._id}, 
-		      			function(err, not) {
-
-    						if (err) res.json({ success: false, message: err });
-
-    						res.json({success: true, message: not});
-    					}
-    				);
-
-			 	}
-			 });
-	    } else {
-	    	res.json({success: false, message: 'Wrong token'});
-	    }
-  });
-
 });
 
 // =======================
@@ -255,15 +156,14 @@ conn.once("open", function(){
 io.on('connection', function (socket) {
 
 	map_clients.push(socket);
-
 	if(debug)
-		console.log("Client: " + socket.id +" is connected");
+		console.info("Client is connected");
 
 	socket.on('changeLocation',function(data){
 
 		if(debug)
 		{
-			console.log("onChangeLocation");
+			console.info("onChangeLocation");
 			console.log(data);
 		}
 
@@ -279,7 +179,7 @@ io.on('connection', function (socket) {
 		    socket.location.push(data);
 		}
 
-	   for(var i=0; i < map_clients.length; i++){
+	    for(var i=0; i < map_clients.length; i++){
       		var client = map_clients[i];
       		if (typeof client.location != "undefined") {
             	if (client.id != socket.id){
@@ -305,7 +205,7 @@ io.on('connection', function (socket) {
 
 		if(debug)
 		{
-			console.log("allLocation");
+			console.info("allLocation");
 		}
 
 		var loc = [];
@@ -331,11 +231,11 @@ io.on('connection', function (socket) {
         socket.emit('location', {location: loc});
 	});
 
-	socket.on('disconnect', function(){
+	socket.on('disconect', function(){
 
 		if(debug)
 		{
-			console.log("disconnect: " + socket.id);
+			console.info("diconect");
 		}
 
 		 for(var i=0; i < map_clients.length; i++){

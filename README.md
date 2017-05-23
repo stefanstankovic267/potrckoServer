@@ -168,6 +168,7 @@ Disconetded user
 ```
 #emit myLocation
 only Potrcko in Service
+>>>>>>> c6ad348faab14d48f2598ef907a3628025d7e12c
 
 
 #emit search
