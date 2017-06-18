@@ -9,7 +9,6 @@ var path = require('path');
 var bodyParser  = require('body-parser');
 var morgan      = require('morgan');
 
-<<<<<<< HEAD
 var config 		= require('./config'); // get our config file
 var users  		= require('./routes/users');
 var routes 		= require('./routes/index');
@@ -18,30 +17,22 @@ var ranks  		= require('./routes/ranks.js');
 var server 		= require('http').Server(app);
 var io 			= require('socket.io')(server , { pingTimeout: 180000, pingInterval: 50000 });
 
-=======
-var config = require('./config'); // get our config file
-var users  = require('./routes/users');
-var routes = require('./routes/index');
-var ranks  = require('./routes/ranks.js');
-
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
->>>>>>> parent of eab83e4... all
 var map_clients = [];
-var geolib = require('geolib');
-var User    = require('./app/models/user');
+var geolib 		= require('geolib');
+var User    	= require('./app/models/user');
+var Notification = require('./app/models/notification');
+var FromRate 	= require('./app/models/FromRate');
+var Rate		= require('./app/models/rate');
 
-<<<<<<< HEAD
-var msgType = ["notoficationFromClient", "dataFromRoute", "acceptJob", "haveRateAccess"];
+var msgType = { MSG_DATA : "Data From Route",
+    	MSG_ACCEPT : "Accept Job",
+    	MSG_NEW_RATE : "New Rate",
+    	MSG_START_LOCATION : "Start Notification",
+    	MSG_END_LOCATION : "End Notification"};
 
 ///========================
 ///Upload config ==========
 ///========================
-=======
-///=======================
-///Upload config =========
-///=======================
->>>>>>> parent of eab83e4... all
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -77,6 +68,7 @@ app.use(morgan('dev'));
 app.use('/', routes);
 app.use('/users', users);
 app.use('/ranks', ranks);
+
 app.set('superSecret', config.secret);
 
 // =======================
@@ -96,9 +88,9 @@ conn.once("open", function(){
   	var token = req.body.token || req.query.token || req.headers['x-access-token'];
 
   		if (token) {
-	  		jwt.verify(token, app.get('superSecret'), function(err, decoded) {      
+	  		jwt.verify(token, app.get('superSecret'), function(err, decoded) {
 		      	if (err) {
-		        	return res.json({ success: false, message: err });    
+		        	return res.json({ success: false, message: err });
 		      	} else {
 
 		      		var patch = decoded._doc._id + '.jpg';
@@ -146,6 +138,181 @@ conn.once("open", function(){
       }
     });
   });
+
+  app.use(function(req, res, next) {
+	  // check header or url parameters or post parameters for token
+	  var token = req.body.token || req.query.token || req.headers['x-access-token'];
+
+	  // decode token
+	  if (token) {
+
+	    // verifies secret and checks exp
+	    jwt.verify(token, app.get('superSecret'), function(err, decoded) {
+	      if (err) {
+	        return res.json({ success: false, message: err });
+	      } else {
+	        // if everything is good, save to request for use in other routes
+	        req.decoded = decoded;
+	        next();
+	      }
+	    });
+
+	  } else {
+
+	    // if there is no token
+	    // return an error
+	    return res.json({
+	        success: false,
+	        message: 'No token provided.'
+	    });
+
+	  }
+	});
+
+  app.post("/notificaton", function(req, res){
+  		var user = req.decoded._doc;
+  		user.password = "1";
+
+  		Notification.findOne({
+		    userId: req.body.to
+		  }, function(err, notification) {
+
+		    if (err) res.json({ success: false, err: err });
+
+		    var mPart = {};
+		    mPart.fromUser = user;
+		    mPart.messageType = req.body.type;
+		    mPart.data = req.body.data;
+
+        	if(req.body.type == msgType.MSG_ACCEPT){
+
+        		if(req.body.data.accepted){
+
+	        		FromRate.findOne({
+	        			userId: req.body.to
+	        			}, function(err, fromRate){
+	        				if (err) res.json({ success: false, message: err });
+
+	        				if(!fromRate){
+	        					var usr = [];
+	        					usr.push(user._id);
+	        					var fRate = new FromRate({
+	        						userId : req.body.to,
+	        						courierId: usr
+	        					});
+	        					fRate.save(function(err){
+	        						if (err) res.json({ success: false, message: err });
+	        					});
+	        				}else if(fromUser){
+	        					fromUser.courierId.push(user._id);
+	        					fromUser.save(function(err, fu){
+							    	if(err) res.json({ success: false, message: err });
+							    });
+	        				}
+	        			}
+
+	        		});
+	        	}
+        	}else if( req.body.type == msgType.MSG_NEW_RATE){
+        		FromRate.findOne({
+        			userId: user._id
+        		}, function(err, fromRate){
+        			if (err) res.json({ success: false, message: err });
+
+        			if(!formRate){ 
+        				res.json({ success: false, message: "You no have access from rate." });
+        			}
+        			else if(fromRate){
+        				var index = fromRate.courierId.indexOf(req.body.to);
+        				if(index == -1){
+        					res.json({ success: false, message: "You no have access from rate." });
+        				} else {
+        					fromRate.courierId.splice(fromRate.courierId.indexOf(socket), 1);
+        					if(fromRate.courierId.length == 0)
+        						fromRate.remove(function(err){
+        							res.json({ success: false, message: err });
+        						});
+        					var rate = new Rate({
+        						ranks: user._id,
+        						rated: req.body.to;
+        						stars: req.body.data.stars,
+        						comment: req.body.data.message,
+        						rateDate: new Date()
+        					});
+        					
+        					rate.save(function(err){
+        						res.json({ success: false, message: err });
+        					});
+        				}
+        			}
+        		});
+        	}
+
+		    if (!notification) {
+
+		    	var msg = [];
+		    	msg.push(mPart);
+
+		    	var not = new Notification({
+		    		userId: req.body.to,
+		    		message: msg
+		    	})
+
+		    	not.save(function(err){
+		    		if(err) res.json({ success: false, message: err });
+		    	})
+
+		      res.json({ success: true, message: 'Message update success.' });
+
+		    } else if (notification) {
+
+		    	/*
+		      Notification.findOneAndUpdate({userId: req.body.to},
+		      	{$push: {messages: msgPart}},
+		      	{safe: true, upsert: true},
+				    function(err, model) {
+				        if(err) res.json({ success: false, err: err });
+				        else res.json({ success: true, message: 'Message update success.' });
+				    });
+				    */
+			    notification.messages.push(msgPart);
+			    notification.save(function(err, not){
+			    	if(err) res.json({ success: false, message: err });
+			    });
+		    }
+		  });
+
+  		for(var i=0; i < map_clients.length; i++){
+  			var client = map_clients[i];
+  			if(client.location.userId = req.body.userId)
+  				client.emit("newNotification", {message: "YouHaveNotificatin"});
+  		}
+
+	});
+
+  app.get("/myNotifications", function(req, res){
+  		if (token) {
+	  		jwt.verify(token, app.get('superSecret'), function(err, decoded) {
+		      	if (err) {
+		        	return res.json({ success: false, message: err });
+		      	} else {
+
+		      		var user = decoded._doc;
+		      		Notification.findOneAndRemove(
+		      			{ userId: user._id},
+		      			function(err, not) {
+    						if (err) res.json({ success: false, message: err });
+    						res.json({success: true, message: not});
+    					}
+    				);
+
+			 	}
+			 });
+	    } else {
+	    	res.json({success: false, message: 'Wrong token'});
+	    }
+  });
+
 });
 
 // =======================
@@ -156,14 +323,15 @@ conn.once("open", function(){
 io.on('connection', function (socket) {
 
 	map_clients.push(socket);
+
 	if(debug)
-		console.info("Client is connected");
+		console.log("Client: " + socket.id +" is connected");
 
 	socket.on('changeLocation',function(data){
 
 		if(debug)
 		{
-			console.info("onChangeLocation");
+			console.log("onChangeLocation");
 			console.log(data);
 		}
 
@@ -174,22 +342,22 @@ io.on('connection', function (socket) {
 	    if(socket.location.indexOf(data) != "undefined"){
 	    	socket.location.splice(socket.location.indexOf(data), 1);
 	    }
-	    
+
 	    if(data.potrcko){
 		    socket.location.push(data);
 		}
 
-	    for(var i=0; i < map_clients.length; i++){
+	   for(var i=0; i < map_clients.length; i++){
       		var client = map_clients[i];
       		if (typeof client.location != "undefined") {
             	if (client.id != socket.id){
             		if(geolib.isPointInCircle(
 					    {
-					    	latitude: map_clients[i].location.latitude, 
+					    	latitude: map_clients[i].location.latitude,
 					    	longitude: map_clients[i].location.longitude
 					    },
 					    {
-					    	latitude: data.latitude, 
+					    	latitude: data.latitude,
 					    	longitude: data.longitude
 					    },
 					    data.radius
@@ -205,7 +373,7 @@ io.on('connection', function (socket) {
 
 		if(debug)
 		{
-			console.info("allLocation");
+			console.log("allLocation");
 		}
 
 		var loc = [];
@@ -215,11 +383,11 @@ io.on('connection', function (socket) {
             	if (client.id != socket.id)
             		if(geolib.isPointInCircle(
 					    {
-					    	latitude: map_clients[i].location.latitude, 
+					    	latitude: map_clients[i].location.latitude,
 					    	longitude: map_clients[i].location.longitude
 					    },
 					    {
-					    	latitude: data.latitude, 
+					    	latitude: data.latitude,
 					    	longitude: data.longitude
 					    },
 					    data.radius
@@ -231,11 +399,11 @@ io.on('connection', function (socket) {
         socket.emit('location', {location: loc});
 	});
 
-	socket.on('disconect', function(){
+	socket.on('disconnect', function(){
 
 		if(debug)
 		{
-			console.info("diconect");
+			console.log("disconnect: " + socket.id);
 		}
 
 		 for(var i=0; i < map_clients.length; i++){
@@ -261,7 +429,6 @@ io.on('connection', function (socket) {
 // =======================
 // start the server ======
 // =======================
-
 
 server.listen(port, function(){
 	console.log('Magic happens at http://localhost:' + port);

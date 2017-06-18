@@ -168,7 +168,6 @@ Disconetded user
 ```
 #emit myLocation
 only Potrcko in Service
->>>>>>> c6ad348faab14d48f2598ef907a3628025d7e12c
 
 
 #emit search
@@ -207,23 +206,18 @@ method POST
             accept: true/false,
             message: message
         }
-        3. haveRateAccess
+        3. newRate
         {
             messageType: type,
-            accepted: true/false,
+            stars: number,
             message: message
         }
-        4. newRate
-        {
-            messageType: type,
-            message: message
-        }
-        5. stratNotification
+        4. stratNotification
         {
             messageType: type,
             message: message
         }
-        6. endNotification
+        5. endNotification
         {
             messageType: type,
             message: message
