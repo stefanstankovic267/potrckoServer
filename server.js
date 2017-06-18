@@ -301,9 +301,7 @@ conn.once("open", function(){
 		      		Notification.findOneAndRemove(
 		      			{ userId: user._id},
 		      			function(err, not) {
-
     						if (err) res.json({ success: false, message: err });
-
     						res.json({success: true, message: not});
     					}
     				);
@@ -431,7 +429,6 @@ io.on('connection', function (socket) {
 // =======================
 // start the server ======
 // =======================
-
 
 server.listen(port, function(){
 	console.log('Magic happens at http://localhost:' + port);
