@@ -209,9 +209,7 @@ conn.once("open", function(){
 							    	if(err) res.json({ success: false, message: err });
 							    });
 	        				}
-	        			}
-
-	        		});
+	        			});
 	        	}
         	}else if( req.body.type == msgType.MSG_NEW_RATE){
         		FromRate.findOne({
@@ -234,7 +232,7 @@ conn.once("open", function(){
         						});
         					var rate = new Rate({
         						ranks: user._id,
-        						rated: req.body.to;
+        						rated: req.body.to,
         						stars: req.body.data.stars,
         						comment: req.body.data.message,
         						rateDate: new Date()
